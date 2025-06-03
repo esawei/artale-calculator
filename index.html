@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>楓之谷貨幣換算器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        .main-content {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .input-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        .result-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        .input-group {
+            margin-bottom: 25px;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 5px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 8px rgba(76,175,80,0.2);
+        }
+        .rate-info {
+            font-size: 14px;
+            color: #666;
+            margin-top: 8px;
+            font-style: italic;
+        }
+        .result {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            height: 100%;
+        }
+        .result-group {
+            margin-bottom: 25px;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .result-group-title {
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px 15px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .result-item {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        .result-item:hover {
+            background-color: #f8f9fa;
+        }
+        .currency-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .value {
+            color: #4CAF50;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        .unit {
+            color: #666;
+            font-size: 14px;
+        }
+        .section-title {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .summary {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .summary-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .summary-value {
+            font-size: 24px;
+            color: #4CAF50;
+            font-weight: 600;
+        }
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            .container {
+                padding: 15px;
+            }
+            .input-group {
+                padding: 15px;
+            }
+            .result-item {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>楓之谷貨幣換算器</h1>
+        
+        <div class="main-content">
+            <div class="input-section">
+                <div class="section-title">輸入區域</div>
+                <div class="input-group">
+                    <label for="snowRate">1雪 = 多少楓幣（萬）：</label>
+                    <input type="number" id="snowRate" value="5.8" step="0.1" min="0" oninput="validateInput(this); updateRates()">
+                    <div class="rate-info">用於計算雪幣和楓幣的換算（單位：萬楓幣）</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="snowAmount">雪幣數量：</label>
+                    <input type="number" id="snowAmount" placeholder="請輸入雪幣數量" min="0" step="0.01" oninput="validateInput(this); calculateFromSnow()">
+                </div>
+
+                <div class="input-group">
+                    <label for="mapleAmount">楓幣數量（萬）：</label>
+                    <input type="number" id="mapleAmount" placeholder="請輸入楓幣數量（萬）" min="0" step="0.01" oninput="validateInput(this); calculateFromMaple()">
+                </div>
+
+                <div class="input-group">
+                    <label for="twdAmount">台幣數量：</label>
+                    <input type="number" id="twdAmount" placeholder="請輸入台幣數量" min="0" step="0.01" oninput="validateInput(this); calculateFromTWD()">
+                </div>
+            </div>
+
+            <div class="result-section">
+                <div class="section-title">換算結果</div>
+                <div class="result" id="result">
+                    <div class="summary">
+                        <div class="summary-title">當前匯率</div>
+                        <div id="currentRates"></div>
+                    </div>
+
+                    <div class="result-group">
+                        <div class="result-group-title">雪幣換算</div>
+                        <div class="result-item" id="snowToMaple">雪 → 楓幣：請輸入數量</div>
+                        <div class="result-item" id="snowToTWD">雪 → 台幣：請輸入數量</div>
+                    </div>
+
+                    <div class="result-group">
+                        <div class="result-group-title">楓幣換算</div>
+                        <div class="result-item" id="mapleToSnow">楓幣 → 雪：請輸入數量</div>
+                        <div class="result-item" id="mapleToTWD">楓幣 → 台幣：請輸入數量</div>
+                    </div>
+
+                    <div class="result-group">
+                        <div class="result-group-title">台幣換算</div>
+                        <div class="result-item" id="twdToMaple">台幣 → 楓幣：請輸入數量</div>
+                        <div class="result-item" id="twdToSnow">台幣 → 雪：請輸入數量</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 固定匯率
+        const SNOW_TO_WC = 300/11; // 1雪 = 27.27wc
+        const WC_TO_TWD = 6.6; // 1wc = 6.6台幣
+        const SNOW_TO_TWD = SNOW_TO_WC / WC_TO_TWD; // 1雪 = 4.13台幣
+
+        // 驗證輸入值
+        function validateInput(input) {
+            // 移除負號
+            if (input.value.startsWith('-')) {
+                input.value = input.value.substring(1);
+            }
+            
+            // 限制小數點後最多兩位
+            if (input.value.includes('.')) {
+                const parts = input.value.split('.');
+                if (parts[1].length > 2) {
+                    input.value = parseFloat(input.value).toFixed(2);
+                }
+            }
+
+            // 確保值不為負數
+            if (parseFloat(input.value) < 0) {
+                input.value = 0;
+            }
+        }
+
+        function updateRates() {
+            const snowRate = parseFloat(document.getElementById('snowRate').value) || 0;
+            if (snowRate > 0) {
+                updateCurrentRates(snowRate);
+                
+                // 根據當前輸入框的值重新計算
+                const snowAmount = parseFloat(document.getElementById('snowAmount').value) || 0;
+                const mapleAmount = parseFloat(document.getElementById('mapleAmount').value) || 0;
+                const twdAmount = parseFloat(document.getElementById('twdAmount').value) || 0;
+
+                if (snowAmount > 0) {
+                    calculateFromSnow();
+                } else if (mapleAmount > 0) {
+                    calculateFromMaple();
+                } else if (twdAmount > 0) {
+                    calculateFromTWD();
+                }
+            }
+        }
+
+        function updateCurrentRates(snowRate) {
+            const rates = [
+                `1雪 = ${snowRate}萬楓幣`,
+                `1雪 = ${SNOW_TO_TWD.toFixed(2)}台幣`,
+                `1萬楓幣 = ${(SNOW_TO_TWD/snowRate).toFixed(2)}台幣`,
+                `1台幣 = ${(snowRate/SNOW_TO_TWD).toFixed(4)}萬楓幣`
+            ];
+            document.getElementById('currentRates').innerHTML = rates.map(rate => 
+                `<div class="summary-value">${rate}</div>`
+            ).join('');
+        }
+
+        function calculateFromSnow() {
+            const snowRate = parseFloat(document.getElementById('snowRate').value) || 0;
+            const amount = parseFloat(document.getElementById('snowAmount').value) || 0;
+            
+            if (amount === 0) {
+                clearResults();
+                return;
+            }
+
+            // 更新其他輸入框
+            document.getElementById('mapleAmount').value = (amount * snowRate).toFixed(2);
+            document.getElementById('twdAmount').value = (amount * SNOW_TO_TWD).toFixed(2);
+
+            updateResults(amount, amount * snowRate, amount * SNOW_TO_TWD);
+        }
+
+        function calculateFromMaple() {
+            const snowRate = parseFloat(document.getElementById('snowRate').value) || 0;
+            const amount = parseFloat(document.getElementById('mapleAmount').value) || 0;
+            
+            if (amount === 0) {
+                clearResults();
+                return;
+            }
+
+            const snowAmount = amount / snowRate;
+            // 更新其他輸入框
+            document.getElementById('snowAmount').value = snowAmount.toFixed(2);
+            document.getElementById('twdAmount').value = (snowAmount * SNOW_TO_TWD).toFixed(2);
+
+            updateResults(snowAmount, amount, snowAmount * SNOW_TO_TWD);
+        }
+
+        function calculateFromTWD() {
+            const snowRate = parseFloat(document.getElementById('snowRate').value) || 0;
+            const amount = parseFloat(document.getElementById('twdAmount').value) || 0;
+            
+            if (amount === 0) {
+                clearResults();
+                return;
+            }
+
+            const snowAmount = amount / SNOW_TO_TWD;
+            const mapleAmount = snowAmount * snowRate;
+
+            // 更新其他輸入框
+            document.getElementById('snowAmount').value = snowAmount.toFixed(2);
+            document.getElementById('mapleAmount').value = mapleAmount.toFixed(2);
+
+            updateResults(snowAmount, mapleAmount, amount);
+        }
+
+        function updateResults(snow, maple, twd) {
+            document.getElementById('snowToMaple').innerHTML = 
+                `<span class="currency-label">雪 → 楓幣：</span><span class="value">${snow.toFixed(2)}</span> <span class="unit">雪</span> = <span class="value">${maple.toFixed(2)}</span> <span class="unit">萬楓幣</span>`;
+            document.getElementById('snowToTWD').innerHTML = 
+                `<span class="currency-label">雪 → 台幣：</span><span class="value">${snow.toFixed(2)}</span> <span class="unit">雪</span> = <span class="value">${twd.toFixed(2)}</span> <span class="unit">台幣</span>`;
+            document.getElementById('mapleToSnow').innerHTML = 
+                `<span class="currency-label">楓幣 → 雪：</span><span class="value">${maple.toFixed(2)}</span> <span class="unit">萬楓幣</span> = <span class="value">${snow.toFixed(2)}</span> <span class="unit">雪</span>`;
+            document.getElementById('mapleToTWD').innerHTML = 
+                `<span class="currency-label">楓幣 → 台幣：</span><span class="value">${maple.toFixed(2)}</span> <span class="unit">萬楓幣</span> = <span class="value">${twd.toFixed(2)}</span> <span class="unit">台幣</span>`;
+            document.getElementById('twdToMaple').innerHTML = 
+                `<span class="currency-label">台幣 → 楓幣：</span><span class="value">${twd.toFixed(2)}</span> <span class="unit">台幣</span> = <span class="value">${maple.toFixed(2)}</span> <span class="unit">萬楓幣</span>`;
+            document.getElementById('twdToSnow').innerHTML = 
+                `<span class="currency-label">台幣 → 雪：</span><span class="value">${twd.toFixed(2)}</span> <span class="unit">台幣</span> = <span class="value">${snow.toFixed(2)}</span> <span class="unit">雪</span>`;
+        }
+
+        function clearResults() {
+            const defaultText = '請輸入數量';
+            document.getElementById('snowToMaple').innerHTML = `<span class="currency-label">雪 → 楓幣：</span>${defaultText}`;
+            document.getElementById('snowToTWD').innerHTML = `<span class="currency-label">雪 → 台幣：</span>${defaultText}`;
+            document.getElementById('mapleToSnow').innerHTML = `<span class="currency-label">楓幣 → 雪：</span>${defaultText}`;
+            document.getElementById('mapleToTWD').innerHTML = `<span class="currency-label">楓幣 → 台幣：</span>${defaultText}`;
+            document.getElementById('twdToMaple').innerHTML = `<span class="currency-label">台幣 → 楓幣：</span>${defaultText}`;
+            document.getElementById('twdToSnow').innerHTML = `<span class="currency-label">台幣 → 雪：</span>${defaultText}`;
+        }
+
+        // 初始化顯示當前匯率
+        updateCurrentRates(5.8);
+    </script>
+</body>
+</html> 
